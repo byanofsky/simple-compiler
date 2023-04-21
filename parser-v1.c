@@ -55,6 +55,12 @@ enum OpType
   OP_MINUS,
 };
 
+typedef struct StatementList
+{
+  ASTNode *statement;
+  struct StatementList *next;
+} StatementList;
+
 typedef struct ASTNode
 {
   enum NodeType type;
@@ -68,6 +74,8 @@ typedef struct ASTNode
     char *string_value;
 
     enum OpType op_type;
+
+    StatementList *statement_list;
   } data;
 } ASTNode;
 
@@ -94,26 +102,64 @@ void printNode(ASTNode *node, int depth)
     printf(" ");
   }
 
-  printf("%s", node_type_to_string(node->type));
-
+  // Print current node.
   switch (node->type)
   {
+  case NODE_PROGRAM:
+  case NODE_STATEMENT_LIST:
+  case NODE_STATEMENT:
+  case NODE_PRINT_STATEMENT:
+  case NODE_ASSIGNMENT_STATEMENT:
+  case NODE_EXPRESSION:
+  case NODE_TERM:
+    printf("%s\n", node_type_to_string(node->type));
+    break;
   case NODE_INTEGER:
-    printf(" %d\n", node->data.int_value);
+    printf(" %s %d\n", node_type_to_string(node->type), node->data.int_value);
     break;
   case NODE_VARIABLE:
-    printf(" %s\n", node->data.string_value);
+    printf(" %s %s\n", node_type_to_string(node->type), node->data.string_value);
     break;
   case NODE_OP:
-    printf(" %c\n", node->data.op_type == OP_ADD ? '+' : '-');
+    printf(" %s %c\n", node_type_to_string(node->type), node->data.op_type == OP_ADD ? '+' : '-');
     break;
   default:
-    printf("\n");
+    fprintf(stderr, "[PrintNode] Unknown node type: %d\n", node->type);
+    exit(1);
     break;
   }
 
-  printNode(node->left, depth + 1);
-  printNode(node->right, depth + 1);
+  StatementList *current;
+  // Handle next nodes.
+  switch (node->type)
+  {
+  case NODE_PROGRAM:
+  case NODE_STATEMENT:
+  case NODE_PRINT_STATEMENT:
+  case NODE_ASSIGNMENT_STATEMENT:
+  case NODE_EXPRESSION:
+  case NODE_TERM:
+  case NODE_INTEGER:
+  case NODE_VARIABLE:
+  case NODE_OP:
+    printNode(node->left, depth + 1);
+    printNode(node->right, depth + 1);
+    break;
+  case NODE_STATEMENT_LIST:
+    current = node->data.statement_list;
+    while (current != NULL)
+    {
+      printNode(current->statement, depth + 1);
+      current = current->next;
+    }
+    break;
+  default:
+    fprintf(stderr, "[HandleNext] Unknown node type: %d\n", node->type);
+    exit(1);
+    break;
+  }
+  // printNode(node->left, depth + 1);
+  // printNode(node->right, depth + 1);
 }
 
 void eat(enum TokenType type)
@@ -293,12 +339,21 @@ ASTNode *parse_statement_list()
   ASTNode *node;
   node = create_node(NODE_STATEMENT_LIST);
 
-  node->left = parse_statement();
+  StatementList *list_head = NULL, *current = NULL;
+
+  list_head = current = malloc(sizeof(StatementList));
+  current->statement = parse_statement();
+  current->next = NULL;
 
   while (current_token.type != TOKEN_END)
   {
-    node->right = parse_statement_list();
+    current->next = malloc(sizeof(StatementList));
+    current = current->next;
+    current->statement = parse_statement();
+    current->next = NULL;
   }
+
+  node->data.statement_list = list_head;
 
   return node;
 }
