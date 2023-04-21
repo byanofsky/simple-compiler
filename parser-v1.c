@@ -73,6 +73,15 @@ typedef struct ASTNode
 
 Token current_token;
 
+ASTNode *create_node(enum NodeType type)
+{
+  ASTNode *node = malloc(sizeof(ASTNode));
+  node->type = type;
+  node->left = NULL;
+  node->right = NULL;
+  return node;
+}
+
 void printNode(ASTNode *node, int depth)
 {
   if (node == NULL)
@@ -123,8 +132,7 @@ void eat(enum TokenType type)
 ASTNode *parse_integer()
 {
   ASTNode *node;
-  node = malloc(sizeof(ASTNode));
-  node->type = NODE_INTEGER;
+  node = create_node(NODE_INTEGER);
 
   if (current_token.type == TOKEN_INTEGER)
   {
@@ -143,8 +151,7 @@ ASTNode *parse_integer()
 ASTNode *parse_variable()
 {
   ASTNode *node;
-  node = malloc(sizeof(ASTNode));
-  node->type = NODE_VARIABLE;
+  node = create_node(NODE_VARIABLE);
 
   if (current_token.type == TOKEN_VARIABLE)
   {
@@ -163,8 +170,7 @@ ASTNode *parse_variable()
 ASTNode *parse_term()
 {
   ASTNode *node;
-  node = malloc(sizeof(ASTNode));
-  node->type = NODE_TERM;
+  node = create_node(NODE_TERM);
 
   if (current_token.type == TOKEN_INTEGER)
   {
@@ -192,8 +198,7 @@ ASTNode *parse_term()
 ASTNode *parse_expression()
 {
   ASTNode *node;
-  node = malloc(sizeof(ASTNode));
-  node->type = NODE_EXPRESSION;
+  node = create_node(NODE_EXPRESSION);
 
   ASTNode *term_node = parse_term();
 
@@ -234,8 +239,7 @@ ASTNode *parse_expression()
 ASTNode *parse_print_statement()
 {
   ASTNode *node;
-  node = malloc(sizeof(ASTNode));
-  node->type = NODE_PRINT_STATEMENT;
+  node = create_node(NODE_PRINT_STATEMENT);
 
   eat(TOKEN_PRINT);
   eat(TOKEN_LPAREN);
@@ -248,8 +252,7 @@ ASTNode *parse_print_statement()
 ASTNode *parse_assignment_statement()
 {
   ASTNode *node;
-  node = malloc(sizeof(ASTNode));
-  node->type = NODE_ASSIGNMENT_STATEMENT;
+  node = create_node(NODE_ASSIGNMENT_STATEMENT);
 
   node->left = parse_variable();
   eat(TOKEN_ASSIGN_OP);
@@ -261,8 +264,7 @@ ASTNode *parse_assignment_statement()
 ASTNode *parse_statement()
 {
   ASTNode *node;
-  node = malloc(sizeof(ASTNode));
-  node->type = NODE_STATEMENT;
+  node = create_node(NODE_STATEMENT);
 
   if (current_token.type == TOKEN_PRINT)
   {
@@ -289,8 +291,7 @@ ASTNode *parse_statement()
 ASTNode *parse_statement_list()
 {
   ASTNode *node;
-  node = malloc(sizeof(ASTNode));
-  node->type = NODE_STATEMENT_LIST;
+  node = create_node(NODE_STATEMENT_LIST);
 
   node->left = parse_statement();
 
@@ -305,8 +306,7 @@ ASTNode *parse_statement_list()
 ASTNode *parse_program()
 {
   ASTNode *node;
-  node = malloc(sizeof(ASTNode));
-  node->type = NODE_PROGRAM;
+  node = create_node(NODE_PROGRAM);
 
   current_token = get_next_token();
   node->left = parse_statement_list();
@@ -315,31 +315,6 @@ ASTNode *parse_program()
 
   return node;
 }
-
-// // Parse an expression and return its AST node.
-// ASTNode *parse_expression()
-// {
-//   ASTNode *node = parse_term();
-
-//   while (current_token.type == TOKEN_ADD_OP || current_token.type == TOKEN_SUB_OP)
-//   {
-//     struct Token op_token = current_token;
-//     eat(op_token.type);
-
-//     ASTNode *rhs = parse_term();
-
-//     if (op_token.type == TOKEN_ADD_OP)
-//     {
-//       node = create_add_node(node, rhs);
-//     }
-//     else
-//     {
-//       node = create_sub_node(node, rhs);
-//     }
-//   }
-
-//   return node;
-// }
 
 int main(int argc, char *argv[])
 {
