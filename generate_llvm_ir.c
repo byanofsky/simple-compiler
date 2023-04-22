@@ -10,6 +10,7 @@ void generate_llvm_ir(ASTNode *node)
     return;
 
   StatementList *current;
+  int left_var_count;
 
   switch (node->type)
   {
@@ -37,15 +38,17 @@ void generate_llvm_ir(ASTNode *node)
     break;
 
   case NODE_OP:
+
+    left_var_count = var_counter;
     generate_llvm_ir(node->left);
     generate_llvm_ir(node->right);
     if (node->data.op_type == OP_ADD)
     {
-      printf("  %%x%d = add i32 %%x%d, %%x%d\n", var_counter, var_counter - 2, var_counter - 1);
+      printf("  %%x%d = add i32 %%x%d, %%x%d\n", var_counter, left_var_count, var_counter - 1);
     }
     else if (node->data.op_type == OP_MINUS)
     {
-      printf("  %%x%d = sub i32 %%x%d, %%x%d\n", var_counter, var_counter - 2, var_counter - 1);
+      printf("  %%x%d = sub i32 %%x%d, %%x%d\n", var_counter, left_var_count, var_counter - 1);
     }
     var_counter++;
     break;
