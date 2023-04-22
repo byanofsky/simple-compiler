@@ -19,12 +19,17 @@ clean:
 	rm -f generate_llvm_ir *.o test-programs-out/*
 
 test: compile_test_program
-	./test-programs-out/test-program-1
+	./test-programs-out/test-program-1 ./test-programs-out/test-program-parse-error
 
 test_program_1: generate_llvm_ir
 	./generate_llvm_ir < ./test-programs/test-program-1.txt > ./test-programs-out/test-program-1.ll
 
 compile_test_program: test_program_1
-	clang -target arm64-apple-macosx12.0.0 \
-		./test-programs-out/test-program-1.ll ./print_integer.c \
-		-o ./test-programs-out/test-program-1
+	clang ./test-programs-out/test-program-1.ll ./print_integer.c -o ./test-programs-out/test-program-1
+
+test_program-parse-error: generate_llvm_ir
+	./generate_llvm_ir < ./test-programs/test-program-parse-error.txt > ./test-programs-out/test-program-parse-error.ll
+
+compile_test_program_parse_error: test_program_parse_error
+	clang ./test-programs-out/test-program-parse-error.ll ./print_integer.c -o ./test-programs-out/test-program-parse-error
+

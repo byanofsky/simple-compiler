@@ -18,6 +18,9 @@ typedef struct
 {
   TokenType type;
   char lexeme[MAX_TOKEN_LENGTH];
+  int position;
 } Token;
 
 Token get_next_token(void);
+
+const char *token_type_to_string(TokenType type);

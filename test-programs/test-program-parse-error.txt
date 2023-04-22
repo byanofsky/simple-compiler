@@ -1,0 +1,4 @@
+testVar1 = 1;
+testVar2 = 2 + testVar1;
+testVar3 = 3 + testVar2;
+print

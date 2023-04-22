@@ -44,7 +44,7 @@ void consume_token(TokenType type)
   }
   else
   {
-    fprintf(stderr, "Error: Unexpected token \"%s\". Expected \"%i\".\n", current_token.lexeme, current_token.type);
+    fprintf(stderr, "Error: Unexpected token \"%s\" at position %d. Expected \"%s\".\n", token_type_to_string(current_token.type), current_token.position, token_type_to_string(type));
     exit(1);
   }
 }
@@ -61,17 +61,10 @@ ASTNode *new_ast_node(enum NodeType type)
 ASTNode *parse_integer()
 {
   ASTNode *node = new_ast_node(NODE_INTEGER);
+  Token token = current_token;
+  consume_token(TOKEN_INTEGER);
 
-  if (current_token.type == TOKEN_INTEGER)
-  {
-    node->data.int_value = atoi(current_token.lexeme);
-    consume_token(TOKEN_INTEGER);
-  }
-  else
-  {
-    fprintf(stderr, "Error: Unexpected token \"%s\"\n", current_token.lexeme);
-    exit(1);
-  }
+  node->data.int_value = atoi(token.lexeme);
 
   return node;
 }
@@ -79,17 +72,10 @@ ASTNode *parse_integer()
 ASTNode *parse_variable()
 {
   ASTNode *node = new_ast_node(NODE_VARIABLE);
+  Token token = current_token;
+  consume_token(TOKEN_VARIABLE);
 
-  if (current_token.type == TOKEN_VARIABLE)
-  {
-    node->data.string_value = strcpy(malloc(strlen(current_token.lexeme) + 1), current_token.lexeme);
-    consume_token(TOKEN_VARIABLE);
-  }
-  else
-  {
-    fprintf(stderr, "Error: Unexpected token \"%s\"\n", current_token.lexeme);
-    exit(1);
-  }
+  node->data.string_value = strcpy(malloc(strlen(token.lexeme) + 1), token.lexeme);
 
   return node;
 }
@@ -97,16 +83,17 @@ ASTNode *parse_variable()
 ASTNode *parse_term()
 {
   ASTNode *node = new_ast_node(NODE_TERM);
+  Token token = current_token;
 
-  if (current_token.type == TOKEN_INTEGER)
+  if (token.type == TOKEN_INTEGER)
   {
     node->left = parse_integer();
   }
-  else if (current_token.type == TOKEN_VARIABLE)
+  else if (token.type == TOKEN_VARIABLE)
   {
     node->left = parse_variable();
   }
-  else if (current_token.type == TOKEN_LPAREN)
+  else if (token.type == TOKEN_LPAREN)
   {
     consume_token(TOKEN_LPAREN);
     node->left = parse_expression();
@@ -114,7 +101,12 @@ ASTNode *parse_term()
   }
   else
   {
-    fprintf(stderr, "Error: Unexpected token \"%s\"\n", current_token.lexeme);
+    fprintf(stderr, "Error: Unexpected token \"%s\" at position %d. Expected \"%s\",\"%s\",\"%s\".\n",
+            token_type_to_string(current_token.type),
+            current_token.position,
+            token_type_to_string(TOKEN_INTEGER),
+            token_type_to_string(TOKEN_VARIABLE),
+            token_type_to_string(TOKEN_LPAREN));
     exit(1);
   }
 
@@ -194,10 +186,11 @@ ASTNode *parse_statement()
   }
   else
   {
-    // TODO: More descriptive error message.
-    // TODO: Extract this into a function.
-    // Include character position in error message.
-    fprintf(stderr, "Error: Unexpected token \"%s\"\n", current_token.lexeme);
+    fprintf(stderr, "Error: Unexpected token \"%s\" at position %d. Expected \"%s\",\"%s\".\n",
+            token_type_to_string(current_token.type),
+            current_token.position,
+            token_type_to_string(TOKEN_PRINT),
+            token_type_to_string(TOKEN_VARIABLE));
     exit(1);
   }
 
