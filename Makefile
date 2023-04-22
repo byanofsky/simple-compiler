@@ -3,6 +3,9 @@ CFLAGS=-Wall -g
 
 all: generate_llvm_ir
 
+printer.o: printer.c printer.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
 lexer-v1.o: lexer-v1.c lexer-v1.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
