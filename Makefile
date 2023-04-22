@@ -13,7 +13,7 @@ generate_llvm_ir: generate_llvm_ir.c parser-v1.o lexer-v1.o
 	$(CC) $(CFLAGS) $^ -o $@ 
 
 clean:
-	rm -f generate_llvm_ir *.o
+	rm -f generate_llvm_ir *.o test-programs-out/*
 
 test: compile_test_program
 	./test-programs-out/test-program-1
