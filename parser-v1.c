@@ -4,6 +4,7 @@
 #include "lexer-v1.h"
 #include "parser-v1.h"
 
+Token current_token;
 ASTNode *parse_expression();
 
 char *node_type_to_string(enum NodeType type)
@@ -35,9 +36,20 @@ char *node_type_to_string(enum NodeType type)
   }
 }
 
-Token current_token;
+void consume_token(TokenType type)
+{
+  if (current_token.type == type)
+  {
+    current_token = get_next_token();
+  }
+  else
+  {
+    fprintf(stderr, "Error: Unexpected token \"%s\". Expected \"%i\".\n", current_token.lexeme, current_token.type);
+    exit(1);
+  }
+}
 
-ASTNode *create_node(enum NodeType type)
+ASTNode *new_ast_node(enum NodeType type)
 {
   ASTNode *node = malloc(sizeof(ASTNode));
   node->type = type;
@@ -46,28 +58,14 @@ ASTNode *create_node(enum NodeType type)
   return node;
 }
 
-void eat(TokenType type)
-{
-  if (current_token.type == type)
-  {
-    current_token = get_next_token();
-  }
-  else
-  {
-    fprintf(stderr, "Error: Unexpected token \"%s\". Expect \"%i\".\n", current_token.lexeme, current_token.type);
-    exit(1);
-  }
-}
-
 ASTNode *parse_integer()
 {
-  ASTNode *node;
-  node = create_node(NODE_INTEGER);
+  ASTNode *node = new_ast_node(NODE_INTEGER);
 
   if (current_token.type == TOKEN_INTEGER)
   {
     node->data.int_value = atoi(current_token.lexeme);
-    eat(TOKEN_INTEGER);
+    consume_token(TOKEN_INTEGER);
   }
   else
   {
@@ -80,13 +78,12 @@ ASTNode *parse_integer()
 
 ASTNode *parse_variable()
 {
-  ASTNode *node;
-  node = create_node(NODE_VARIABLE);
+  ASTNode *node = new_ast_node(NODE_VARIABLE);
 
   if (current_token.type == TOKEN_VARIABLE)
   {
     node->data.string_value = strcpy(malloc(strlen(current_token.lexeme) + 1), current_token.lexeme);
-    eat(TOKEN_VARIABLE);
+    consume_token(TOKEN_VARIABLE);
   }
   else
   {
@@ -99,8 +96,7 @@ ASTNode *parse_variable()
 
 ASTNode *parse_term()
 {
-  ASTNode *node;
-  node = create_node(NODE_TERM);
+  ASTNode *node = new_ast_node(NODE_TERM);
 
   if (current_token.type == TOKEN_INTEGER)
   {
@@ -112,9 +108,9 @@ ASTNode *parse_term()
   }
   else if (current_token.type == TOKEN_LPAREN)
   {
-    eat(TOKEN_LPAREN);
+    consume_token(TOKEN_LPAREN);
     node->left = parse_expression();
-    eat(TOKEN_RPAREN);
+    consume_token(TOKEN_RPAREN);
   }
   else
   {
@@ -127,16 +123,12 @@ ASTNode *parse_term()
 
 ASTNode *parse_expression()
 {
-  ASTNode *node;
-  node = create_node(NODE_EXPRESSION);
-
+  ASTNode *node = new_ast_node(NODE_EXPRESSION);
   ASTNode *term_node = parse_term();
 
   if (current_token.type == TOKEN_ADD_OP)
   {
-    ASTNode *add_node;
-    add_node = malloc(sizeof(ASTNode));
-    add_node->type = NODE_OP;
+    ASTNode *add_node = new_ast_node(NODE_OP);
 
     if (strcmp(current_token.lexeme, "+") == 0)
     {
@@ -152,7 +144,7 @@ ASTNode *parse_expression()
       exit(1);
     }
 
-    eat(TOKEN_ADD_OP);
+    consume_token(TOKEN_ADD_OP);
 
     add_node->left = term_node;
     add_node->right = parse_expression();
@@ -168,24 +160,22 @@ ASTNode *parse_expression()
 
 ASTNode *parse_print_statement()
 {
-  ASTNode *node;
-  node = create_node(NODE_PRINT_STATEMENT);
+  ASTNode *node = new_ast_node(NODE_PRINT_STATEMENT);
 
-  eat(TOKEN_PRINT);
-  eat(TOKEN_LPAREN);
+  consume_token(TOKEN_PRINT);
+  consume_token(TOKEN_LPAREN);
   node->left = parse_expression();
-  eat(TOKEN_RPAREN);
+  consume_token(TOKEN_RPAREN);
 
   return node;
 }
 
 ASTNode *parse_assignment_statement()
 {
-  ASTNode *node;
-  node = create_node(NODE_ASSIGNMENT_STATEMENT);
+  ASTNode *node = new_ast_node(NODE_ASSIGNMENT_STATEMENT);
 
   node->left = parse_variable();
-  eat(TOKEN_ASSIGN_OP);
+  consume_token(TOKEN_ASSIGN_OP);
   node->right = parse_expression();
 
   return node;
@@ -193,9 +183,7 @@ ASTNode *parse_assignment_statement()
 
 ASTNode *parse_statement()
 {
-  ASTNode *node;
-  node = create_node(NODE_STATEMENT);
-
+  ASTNode *node = new_ast_node(NODE_STATEMENT);
   if (current_token.type == TOKEN_PRINT)
   {
     node->left = parse_print_statement();
@@ -213,18 +201,15 @@ ASTNode *parse_statement()
     exit(1);
   }
 
-  eat(TOKEN_SEMICOLON);
+  consume_token(TOKEN_SEMICOLON);
 
   return node;
 }
 
 ASTNode *parse_statement_list()
 {
-  ASTNode *node;
-  node = create_node(NODE_STATEMENT_LIST);
-
+  ASTNode *node = new_ast_node(NODE_STATEMENT_LIST);
   StatementList *list_head = NULL, *current = NULL;
-
   list_head = current = malloc(sizeof(StatementList));
   current->statement = parse_statement();
   current->next = NULL;
@@ -244,13 +229,11 @@ ASTNode *parse_statement_list()
 
 ASTNode *parse_program()
 {
-  ASTNode *node;
-  node = create_node(NODE_PROGRAM);
-
+  ASTNode *node = new_ast_node(NODE_PROGRAM);
   current_token = get_next_token();
   node->left = parse_statement_list();
 
-  eat(TOKEN_END);
+  consume_token(TOKEN_END);
 
   return node;
 }
