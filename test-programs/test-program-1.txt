@@ -1,2 +1,4 @@
-testVar = 2 - 3 + 5;
-print(testVar);
+testVar1 = 2 - 3;
+testVar2 = 5 + 6;
+testVar3 = testVar1 + testVar2;
+print(testVar3);
