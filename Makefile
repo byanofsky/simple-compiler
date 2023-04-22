@@ -17,5 +17,5 @@ test_program_1: generate_llvm_ir
 
 compile_test_program: test_program_1
 	clang -target arm64-apple-macosx12.0.0 \
-		./test-programs-out/test-program-1.ll ./test-programs/print_integer.c \
+		./test-programs-out/test-program-1.ll ./print_integer.c \
 		-o ./test-programs-out/test-program-1
