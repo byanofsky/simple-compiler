@@ -4,39 +4,39 @@
 
 #define MAX_TOKEN_LENGTH 100
 
-enum TokenType
+typedef enum
 {
+  TOKEN_UNKNOWN,
   TOKEN_INTEGER,
   TOKEN_VARIABLE,
+  TOKEN_PRINT,
   TOKEN_ADD_OP,
   TOKEN_ASSIGN_OP,
-  TOKEN_PRINT,
   TOKEN_LPAREN,
   TOKEN_RPAREN,
   TOKEN_SEMICOLON,
-  TOKEN_END,
-  TOKEN_UNKNOWN
-};
+  TOKEN_END
+} TokenType;
 
-typedef struct Token
+typedef struct
 {
-  enum TokenType type;
+  TokenType type;
   char lexeme[MAX_TOKEN_LENGTH];
 } Token;
 
-int is_digit(char c)
+int is_numeric(char c)
 {
   return isdigit(c);
 }
 
-int is_letter(char c)
+int is_alpha(char c)
 {
   return isalpha(c);
 }
 
-int is_variable_char(char c)
+int is_alphanumeric(char c)
 {
-  return is_letter(c) || is_digit(c);
+  return is_alpha(c) || is_numeric(c);
 }
 
 int is_whitespace(char c)
@@ -44,12 +44,10 @@ int is_whitespace(char c)
   return isspace(c);
 }
 
-Token get_next_token()
+Token get_next_token(void)
 {
   char c;
-  Token token;
-  token.type = TOKEN_UNKNOWN;
-  memset(token.lexeme, '\0', MAX_TOKEN_LENGTH);
+  Token token = {TOKEN_UNKNOWN, {0}};
 
   while ((c = getchar()) != EOF)
   {
@@ -87,11 +85,11 @@ Token get_next_token()
       sprintf(token.lexeme, "%c", c);
       break;
     }
-    else if (is_digit(c))
+    else if (is_numeric(c))
     {
       token.type = TOKEN_INTEGER;
       int i = 0;
-      while (is_digit(c))
+      while (is_numeric(c))
       {
         token.lexeme[i++] = c;
         c = getchar();
@@ -99,10 +97,10 @@ Token get_next_token()
       ungetc(c, stdin);
       break;
     }
-    else if (is_letter(c))
+    else if (is_alpha(c))
     {
       int i = 0;
-      while (is_variable_char(c))
+      while (is_alphanumeric(c))
       {
         token.lexeme[i++] = c;
         c = getchar();

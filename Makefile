@@ -3,6 +3,12 @@ CFLAGS=-Wall -g
 
 all: generate_llvm_ir
 
+lexer-v1.o: lexer-v1.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+parser-v1.o: parser-v1.c parser-v1.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
 generate_llvm_ir: generate_llvm_ir.c parser-v1.o
 	$(CC) $(CFLAGS) $^ -o $@ 
 
