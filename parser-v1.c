@@ -1,6 +1,7 @@
 #include <stdlib.h>
-#include "lexer-v1.c"
 #include <stdio.h>
+#include <string.h>
+#include "lexer-v1.h"
 #include "parser-v1.h"
 
 ASTNode *parse_expression();
@@ -117,7 +118,7 @@ void printNode(ASTNode *node, int depth)
   // printNode(node->right, depth + 1);
 }
 
-void eat(enum TokenType type)
+void eat(TokenType type)
 {
   if (current_token.type == type)
   {

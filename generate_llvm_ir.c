@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "parser-v1.h"
 #include <string.h>
+#include "lexer-v1.h"
+#include "parser-v1.h"
 
 int register_counter = 0;
 int var_counter = 0;
