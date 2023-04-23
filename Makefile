@@ -19,7 +19,7 @@ compiler: compiler.c generate_llvm_ir
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -f generate_llvm_ir compiler *.o test-programs-out/*
+	rm -f generate_llvm_ir compiler *.o test-programs-out/* temp.ll
 
 test: compile_test_program
 	./test-programs-out/test-program-1 ./test-programs-out/test-program-parse-error
