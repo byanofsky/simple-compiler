@@ -48,3 +48,9 @@ Run the program:
 
 > Note: a temporary file called `temp.ll` will output to the current directory.
 > This can be safely deleted.
+
+## Limitations
+
+The LLVM IR target is hardcoded as `arm64-apple-macosx12.0.0`.
+
+So I suspect this may have trouble running on other machines.
